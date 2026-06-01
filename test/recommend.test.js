@@ -28,11 +28,11 @@ test('Eligible products are ranked by lowest total interest (within same afforda
 });
 
 test('Unaffordable request is flagged (high FOIR), not silently approved', () => {
+  // Income clears the Personal Loan min (25k) but the EMI pushes FOIR past 50%.
   const f = buildRecommendation({
-    ...salariedBase, monthlyIncome: 20000, existingEmi: 0, hasExistingLoan: false,
+    ...salariedBase, monthlyIncome: 30000, existingEmi: 0, hasExistingLoan: false,
   });
-  // Top pick exists but should be marked unaffordable (FOIR > 50%).
-  assert.ok(f.recommendation);
+  assert.ok(f.recommendation, 'a product is eligible');
   assert.equal(f.recommendation.affordable, false);
   assert.ok(f.recommendation.foirPct > 50);
 });

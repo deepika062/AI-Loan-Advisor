@@ -20,7 +20,9 @@
       "Bash(node --check src/advisor.js)",
       "Bash(node --check server.js)",
       "Bash(node -e \"new Function\\(require\\('fs'\\).readFileSync\\('public/app.js','utf8'\\)\\); console.log\\('app.js parses OK'\\)\")",
-      "Bash(node -e \"new Function\\(require\\('fs'\\).readFileSync\\('public/app.js','utf8'\\)\\); console.log\\('OK'\\)\")"
+      "Bash(node -e \"new Function\\(require\\('fs'\\).readFileSync\\('public/app.js','utf8'\\)\\); console.log\\('OK'\\)\")",
+      "Bash(node --check src/auth.js)",
+      "Bash(node -e \"new Function\\(require\\('fs'\\).readFileSync\\('public/app.js','utf8'\\)\\)\")"
     ]
   }
 }
