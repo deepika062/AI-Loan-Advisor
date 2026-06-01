@@ -17,6 +17,28 @@ async function loadDemoUsers() {
   } catch { /* ignore */ }
 }
 
+// ---- Product catalog (public) ----------------------------------------------
+
+async function loadCatalog() {
+  try {
+    const { products } = await (await fetch('/api/products')).json();
+    $('catalog').innerHTML = products.map((p) => `
+      <div class="prod">
+        <div class="prod-h"><b>${p.name}</b><span class="rate">${p.baseRatePct}% base</span></div>
+        <div class="prod-d">${p.description}</div>
+        <div class="prod-m">₹${p.minAmount.toLocaleString('en-IN')}–₹${p.maxAmount.toLocaleString('en-IN')} · ${p.minTenureMonths}–${p.maxTenureMonths} months</div>
+      </div>`).join('');
+  } catch {
+    $('catalog').innerHTML = '<p class="note bad">Could not load the product catalog.</p>';
+  }
+}
+
+$('catalogToggle').onclick = () => {
+  const c = $('catalog');
+  const hidden = c.classList.toggle('hidden');
+  $('catalogToggle').textContent = hidden ? 'Show' : 'Hide';
+};
+
 async function authedFetch(path, opts = {}) {
   const res = await fetch(path, {
     ...opts,
@@ -40,11 +62,32 @@ $('loginBtn').onclick = async () => {
     $('who').textContent = `${me.name} · ${me.userId}`;
     prefillProfile(me.profile);
     $('profileCard').classList.remove('hidden');
+    $('logoutBtn').classList.remove('hidden');
     $('loginCard').querySelector('h2').textContent = '1 · Signed in ✓';
   } catch (e) {
     TOKEN = null; msg.className = 'msg err'; msg.textContent = e.message;
   }
 };
+
+// Client-side sign-out: tokens are stateless, so there is no server session to
+// destroy — we simply discard the token and clear all user-scoped UI state.
+function logout() {
+  TOKEN = null;
+  LATEST_FACTS = null;
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  $('who').textContent = '';
+  $('logoutBtn').classList.add('hidden');
+  ['profileCard', 'resultCard', 'chatCard'].forEach((id) => $(id).classList.add('hidden'));
+  $('results').innerHTML = '';
+  $('chatLog').innerHTML = '';
+  $('suggest').innerHTML = '';
+  setVoiceNote('');
+  $('token').value = '';
+  $('demoUsers').value = '';
+  const msg = $('loginMsg'); msg.className = 'msg'; msg.textContent = '';
+  $('loginCard').querySelector('h2').textContent = '1 · Sign in (mock token)';
+}
+$('logoutBtn').onclick = logout;
 
 function prefillProfile(p) {
   if (p.monthlyIncome != null) $('income').value = p.monthlyIncome;
@@ -72,13 +115,25 @@ function collectRequest() {
 // ---- Recommendation --------------------------------------------------------
 
 $('recommendBtn').onclick = async () => {
+  const btn = $('recommendBtn');
+  const original = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Calculating…';
   try {
     const facts = await authedFetch('/api/me/recommend', { method: 'POST', body: JSON.stringify(collectRequest()) });
     renderResults(facts);
     $('resultCard').classList.remove('hidden');
     $('chatCard').classList.remove('hidden');
     seedChat(facts);
-  } catch (e) { alert(e.message); }
+    $('resultCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch (e) {
+    // Inline error (no blocking alert).
+    $('resultCard').classList.remove('hidden');
+    $('results').innerHTML = `<p class="note bad">⚠ ${e.message}</p>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = original;
+  }
 };
 
 function renderResults(facts) {
@@ -220,11 +275,42 @@ function stripMarkdown(text) {
     .trim();
 }
 
+// Voices load asynchronously in most browsers; cache them and refresh on change.
+let VOICES = [];
+function loadVoices() { VOICES = ('speechSynthesis' in window) ? window.speechSynthesis.getVoices() : []; }
+if ('speechSynthesis' in window) {
+  loadVoices();
+  window.speechSynthesis.onvoiceschanged = loadVoices;
+}
+
+function pickVoice(langCode) {
+  if (!VOICES.length) loadVoices();
+  const base = langCode.split('-')[0].toLowerCase();
+  return VOICES.find((v) => v.lang && v.lang.toLowerCase() === langCode.toLowerCase())
+    || VOICES.find((v) => v.lang && v.lang.toLowerCase().startsWith(base))
+    || null;
+}
+
+function setVoiceNote(msg) {
+  const el = $('voiceNote');
+  if (el) el.textContent = msg || '';
+}
+
 function speak(text, language) {
-  if (!('speechSynthesis' in window)) return;
+  if (!('speechSynthesis' in window)) { setVoiceNote('This browser does not support speech.'); return; }
+  const langCode = LANG_VOICE[language] || 'en-IN';
   window.speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(stripMarkdown(text));
-  u.lang = LANG_VOICE[language] || 'en-IN';
+  u.lang = langCode;
+  const v = pickVoice(langCode);
+  if (v) {
+    u.voice = v;
+    setVoiceNote('');
+  } else if (language !== 'English') {
+    // No installed TTS voice for this language — an OS/browser limitation.
+    setVoiceNote(`⚠ No ${language} text-to-speech voice is installed on this system, so audio may sound wrong. ` +
+      `Add one via Windows Settings → Time & Language → Speech, or open the app in Chrome.`);
+  }
   window.speechSynthesis.speak(u);
 }
 
@@ -383,3 +469,4 @@ $('downloadBtn').onclick = () => {
 };
 
 loadDemoUsers();
+loadCatalog();

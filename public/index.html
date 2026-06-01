@@ -9,7 +9,10 @@
 <body>
   <header class="topbar">
     <div class="brand">💰 LoanWise <span>AI Loan Advisor</span></div>
-    <div class="who" id="who"></div>
+    <div class="userbox">
+      <span class="who" id="who"></span>
+      <button id="logoutBtn" class="ghost hidden">Sign out</button>
+    </div>
   </header>
 
   <main class="layout">
@@ -76,8 +79,17 @@
       </section>
     </aside>
 
-    <!-- Right: results + chat -->
+    <!-- Right: catalog + results + chat -->
     <section class="panel main">
+      <section class="card" id="catalogCard">
+        <div class="cardhead">
+          <h2>Available loan products</h2>
+          <button id="catalogToggle" class="ghost" title="Show / hide catalog">Hide</button>
+        </div>
+        <p class="muted">Illustrative mock rates. Sign in and enter your details to see which products you qualify for and your exact EMI.</p>
+        <div id="catalog"></div>
+      </section>
+
       <section class="card hidden" id="resultCard">
         <div class="cardhead">
           <h2>Recommendation</h2>
@@ -101,6 +113,7 @@
             <label class="inline check"><input id="voice" type="checkbox" /> 🔊 Speak replies</label>
           </div>
         </div>
+        <div id="voiceNote" class="voicenote"></div>
         <div id="chatLog" class="chatlog"></div>
         <div class="composer">
           <input id="chatInput" type="text" placeholder="e.g. Why this product? What if I choose 60 months?" />

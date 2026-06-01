@@ -14,7 +14,9 @@ body {
 }
 .brand { font-size: 20px; font-weight: 700; }
 .brand span { font-size: 13px; color: var(--muted); font-weight: 400; margin-left: 6px; }
+.userbox { display: flex; align-items: center; gap: 12px; }
 .who { font-size: 13px; color: var(--accent2); }
+.userbox button.ghost { padding: 5px 12px; font-size: 12px; }
 .layout { display: grid; grid-template-columns: 380px 1fr; gap: 18px; padding: 18px; max-width: 1200px; margin: 0 auto; }
 .panel { display: flex; flex-direction: column; gap: 16px; }
 .card {
@@ -53,7 +55,14 @@ button:hover { filter: brightness(1.08); }
 #demoUsers { margin-bottom: 10px; }
 .msg { font-size: 12.5px; margin-top: 8px; min-height: 16px; }
 .msg.err { color: var(--bad); } .msg.ok { color: var(--accent); }
-.hidden { display: none; }
+.hidden { display: none !important; }
+
+/* Product catalog */
+.prod { border: 1px solid var(--line); border-radius: 9px; padding: 10px 12px; margin-bottom: 8px; background: #1b222c; }
+.prod-h { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.prod-h .rate { font-size: 11.5px; color: var(--accent); background: var(--chip); padding: 2px 8px; border-radius: 12px; white-space: nowrap; }
+.prod-d { font-size: 12.5px; color: var(--muted); margin: 3px 0; }
+.prod-m { font-size: 11.5px; color: var(--text); opacity: .8; }
 
 /* Recommendation cards */
 .rec { border: 1px solid var(--line); border-radius: 10px; padding: 14px; margin-bottom: 12px; background: #1b222c; }
@@ -107,4 +116,19 @@ button:hover { filter: brightness(1.08); }
   padding: 5px 10px; border-radius: 16px; cursor: pointer; width: auto;
 }
 .typing { font-style: italic; color: var(--muted); }
-@media (max-width: 860px) { .layout { grid-template-columns: 1fr; } }
+.voicenote { font-size: 11.5px; color: var(--warn); margin: 0 0 8px; }
+.voicenote:empty { display: none; }
+@media (max-width: 860px) {
+  .layout { grid-template-columns: 1fr; padding: 12px; gap: 12px; }
+  .topbar { flex-wrap: wrap; gap: 8px; padding: 12px 16px; }
+  .cardhead { flex-wrap: wrap; }
+  .chatopts { flex-wrap: wrap; }
+}
+@media (max-width: 560px) {
+  .metrics { grid-template-columns: repeat(2, 1fr); }  /* 4 → 2 cols so values stay readable */
+  .grid2 { grid-template-columns: 1fr; }               /* stack paired inputs */
+  .brand { font-size: 18px; }
+  .composer { flex-wrap: wrap; }
+  .composer button { width: 100%; }
+  .bubble { max-width: 95%; }
+}

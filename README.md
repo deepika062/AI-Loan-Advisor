@@ -62,12 +62,13 @@ Browser (public/) ──HTTP──> Express (server.js)
 | `src/emi.js` | EMI / total interest / FOIR / tenure-comparison math (+ amortization preview). **Unit tested.** |
 | `src/catalog.js` | Mock product catalog + hard eligibility rules + risk-based rate adjustment. |
 | `src/recommend.js` | Input validation/normalization, eligibility evaluation, ranking → facts object. |
-| `src/auth.js` | Mock bearer-token auth, per-user isolated state, demo users. |
+| `src/auth.js` | Mock bearer-token auth, per-user isolated state, PII-redacting audit log, rate limiter. |
 | `src/llm.js` | Thin client for the LLM wrapper (`POST /llm/query`), timeout + error handling. |
-| `src/advisor.js` | Grounding prompt, safeguards, fixed disclaimer, deterministic fallback. |
-| `server.js` | Express routes (public catalog + authenticated `/api/me/*`). |
-| `public/` | Single-page chat UI (sign-in, request form, recommendation cards, chat). |
+| `src/advisor.js` | Grounding prompt, safeguards, fixed disclaimer, deterministic fallback, multilingual. |
+| `server.js` | Express routes (public catalog + authenticated `/api/me/*`), audit logging, rate limiting. |
+| `public/` | Single-page chat UI (sign-in, request form, recommendation cards, amortization preview, chat). |
 | `test/emi.test.js` | Correctness tests for the financial math. |
+| `test/recommend.test.js` | Tests for eligibility rules + recommendation ranking + validation. |
 
 ---
 
@@ -88,11 +89,14 @@ npm test
 ```
 
 ### Try it in the UI
-1. Pick a **demo user** (e.g. *Alice (Salaried)*) — this fills the bearer token.
-2. Click **Sign in** → your stored profile pre-fills the form.
-3. Set a loan amount / purpose / tenure → **Get recommendation**.
-4. Ask follow-ups in the chat: *"Why this product?"*, *"What if I pick a longer
-   tenure?"*, *"Can I afford this?"*, *"Compare my top 2 options."*
+1. Browse the **Available loan products** catalog (shown on load, no login needed).
+2. Pick a **demo user** (e.g. *Alice (Salaried)*) — this fills the bearer token.
+3. Click **Sign in** → your stored profile pre-fills the form.
+4. Set a loan amount / purpose / tenure → **Get recommendation** (ranked cards +
+   amortization preview + tenure trade-off).
+5. Ask follow-ups in the chat: *"Why this product?"*, *"What if I pick a longer
+   tenure?"*, *"Can I afford this?"*, *"Compare my top 2 options."* — switch
+   language (e.g. हिन्दी), toggle 🔊, or ⬇ download the summary.
 
 ### Demo users (mock tokens)
 | Token | User | Profile highlights |
@@ -183,6 +187,11 @@ compliance-critical statement can never be omitted or reworded.
   never enters a prompt. A `traceId` + `userId` is attached as request metadata
   for auditability.
 - Invalid/missing tokens get a generic `401` that doesn't reveal which tokens exist.
+- **Audit log** (`audit()` in `src/auth.js`): every recommend/chat call emits a
+  structured log line (userId, action, traceId, product recommended) with
+  financial **PII masked** (`redactForLog` turns amount/income/EMI into `***`).
+- **Rate limiting** (`rateLimit()`): 60 requests/min per authenticated user →
+  `429` beyond that, so one user can't exhaust the shared LLM quota.
 
 **In a real implementation we would add:**
 - **Identity:** verified JWT / OAuth2 sessions from an IdP; short-lived tokens +
@@ -196,10 +205,12 @@ compliance-critical statement can never be omitted or reworded.
 - **Model boundary:** send only the minimum derived facts to the LLM provider;
   prefer a data-processing-agreement / no-training endpoint; consider on-prem or
   VPC-hosted inference for regulated data.
-- **Auditability:** immutable audit log of advice given (inputs → computed facts →
-  reply), so any recommendation is explainable and reproducible after the fact.
-- **Abuse/safety:** rate limiting, prompt-injection hardening (the grounding
-  rules + code-owned math already blunt this), and output validation.
+- **Auditability:** persist the prototype's audit log to an immutable,
+  access-controlled store (inputs → computed facts → reply), so any recommendation
+  is explainable and reproducible after the fact.
+- **Abuse/safety:** distributed rate limiting (shared store across instances),
+  prompt-injection hardening (the grounding rules + code-owned math already blunt
+  this), and output validation.
 
 ---
 
@@ -217,13 +228,26 @@ compliance-critical statement can never be omitted or reworded.
 
 ## 🧪 Test cases
 
-Automated (`npm test`, `test/emi.test.js`):
+Automated — **15 tests, all passing** (`npm test`):
+
+*Financial math* (`test/emi.test.js`):
 - EMI matches the amortization formula for known values (₹1L @12%/12mo → ₹8,884.88).
 - ₹5L @14%/60mo → ₹11,634.13.
 - 0% BNPL splits principal evenly, zero interest.
 - Longer tenure → lower EMI but higher total interest.
 - FOIR computes debt-to-income correctly.
 - Invalid inputs (zero/negative principal, non-integer tenure, negative rate) are rejected.
+
+*Decision logic* (`test/recommend.test.js`):
+- Salaried low-risk with existing loan → Top-up Loan wins on rate (11%).
+- Eligible products are ranked by lowest total interest within the same tier.
+- Unaffordable request (FOIR > 50%) is flagged, not silently approved.
+- No eligible product for an over-large amount → every exclusion is explained.
+- Salary Advance capped at ~1× monthly income.
+- BNPL eligibility carries 0% interest.
+- Collateral / employment gates enforced (Secured, SME).
+- Profile validation rejects bad input.
+- Tenure trade-off illustration is produced.
 
 Manual scenarios verified against the running server:
 1. **Alice, ₹5L general, 36mo** → Top-up Loan @11% (beats Personal @13% because of
@@ -233,6 +257,11 @@ Manual scenarios verified against the running server:
    explains underwriting dependence.
 3. **₹90L on ₹12k income** → no eligible product; each exclusion explained with its
    reason, no fabricated offer.
+4. **Cross-user isolation** → Alice updating her income to ₹999,999 does not change
+   Bob's profile (still ₹45k); each token sees only its own data.
+5. **Rate limit** → the 61st request within a minute returns `429`.
+6. **Multilingual** → switching to Hindi returns the same grounded numbers
+   (EMI ₹16,369.36, 11%) translated into Hindi.
 
 ---
 
