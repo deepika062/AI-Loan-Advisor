@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LoanWise — AI Loan Advisor</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">💰 LoanWise <span>AI Loan Advisor</span></div>
+    <div class="who" id="who"></div>
+  </header>
+
+  <main class="layout">
+    <!-- Left: sign-in + profile + request -->
+    <aside class="panel">
+      <section class="card" id="loginCard">
+        <h2>1 · Sign in (mock token)</h2>
+        <p class="muted">Each token is scoped to one user. Pick a demo user or paste a token.</p>
+        <select id="demoUsers"></select>
+        <input id="token" type="text" placeholder="Bearer token (tok_...)" autocomplete="off" />
+        <button id="loginBtn">Sign in</button>
+        <div id="loginMsg" class="msg"></div>
+      </section>
+
+      <section class="card hidden" id="profileCard">
+        <h2>2 · Your borrowing request</h2>
+        <label>Loan amount (₹)
+          <input id="amount" type="number" value="500000" min="1000" step="1000" />
+        </label>
+        <label>Purpose
+          <select id="purpose">
+            <option value="general">General</option>
+            <option value="business">Business</option>
+            <option value="shopping">Shopping / Electronics</option>
+            <option value="emergency">Emergency</option>
+            <option value="medical">Medical</option>
+            <option value="education">Education</option>
+            <option value="debt_consolidation">Debt consolidation</option>
+            <option value="home_improvement">Home improvement</option>
+          </select>
+        </label>
+        <label>Preferred tenure (months)
+          <input id="tenure" type="number" value="36" min="1" max="120" step="1" />
+        </label>
+        <div class="grid2">
+          <label>Monthly income (₹)
+            <input id="income" type="number" value="80000" min="0" step="1000" />
+          </label>
+          <label>Existing EMI (₹)
+            <input id="existingEmi" type="number" value="8000" min="0" step="500" />
+          </label>
+        </div>
+        <div class="grid2">
+          <label>Employment
+            <select id="employment">
+              <option value="salaried">Salaried</option>
+              <option value="self_employed">Self-employed</option>
+              <option value="business">Business</option>
+            </select>
+          </label>
+          <label>Risk profile
+            <select id="risk">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+            </select>
+          </label>
+        </div>
+        <div class="grid2">
+          <label class="check"><input id="hasCollateral" type="checkbox" /> Has collateral</label>
+          <label class="check"><input id="hasExistingLoan" type="checkbox" /> Has existing loan</label>
+        </div>
+        <button id="recommendBtn">Get recommendation</button>
+      </section>
+    </aside>
+
+    <!-- Right: results + chat -->
+    <section class="panel main">
+      <section class="card hidden" id="resultCard">
+        <div class="cardhead">
+          <h2>Recommendation</h2>
+          <button id="downloadBtn" class="ghost" title="Download a summary of this recommendation">⬇ Download summary</button>
+        </div>
+        <div id="results"></div>
+      </section>
+
+      <section class="card chat hidden" id="chatCard">
+        <div class="cardhead">
+          <h2>Ask the advisor</h2>
+          <div class="chatopts">
+            <label class="inline">🌐
+              <select id="language">
+                <option value="English">English</option>
+                <option value="Hindi">हिन्दी (Hindi)</option>
+                <option value="Spanish">Español</option>
+                <option value="French">Français</option>
+              </select>
+            </label>
+            <label class="inline check"><input id="voice" type="checkbox" /> 🔊 Speak replies</label>
+          </div>
+        </div>
+        <div id="chatLog" class="chatlog"></div>
+        <div class="composer">
+          <input id="chatInput" type="text" placeholder="e.g. Why this product? What if I choose 60 months?" />
+          <button id="sendBtn">Send</button>
+        </div>
+        <div class="suggest" id="suggest"></div>
+      </section>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

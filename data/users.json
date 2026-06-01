@@ -1,0 +1,38 @@
+{
+  "tok_alice_123": {
+    "userId": "u_alice",
+    "name": "Alice (Salaried)",
+    "profile": {
+      "monthlyIncome": 80000,
+      "existingEmi": 8000,
+      "employmentType": "salaried",
+      "riskProfile": "low",
+      "hasCollateral": false,
+      "hasExistingLoan": true
+    }
+  },
+  "tok_bob_456": {
+    "userId": "u_bob",
+    "name": "Bob (Self-employed)",
+    "profile": {
+      "monthlyIncome": 45000,
+      "existingEmi": 0,
+      "employmentType": "self_employed",
+      "riskProfile": "medium",
+      "hasCollateral": true,
+      "hasExistingLoan": false
+    }
+  },
+  "tok_priya_789": {
+    "userId": "u_priya",
+    "name": "Priya (Business / SME)",
+    "profile": {
+      "monthlyIncome": 150000,
+      "existingEmi": 20000,
+      "employmentType": "business",
+      "riskProfile": "medium",
+      "hasCollateral": true,
+      "hasExistingLoan": true
+    }
+  }
+}

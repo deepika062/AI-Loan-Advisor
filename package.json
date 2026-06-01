@@ -1,0 +1,18 @@
+{
+  "name": "ai-loan-advisor-chatbot",
+  "version": "1.0.0",
+  "description": "AI-powered loan advisory chatbot. Deterministic EMI/eligibility math grounded into LLM explanations via an LLM wrapper API.",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}

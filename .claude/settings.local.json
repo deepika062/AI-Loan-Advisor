@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e ' *)",
+      "Bash(npm install *)",
+      "Bash(npm test *)",
+      "Bash(curl -sS http://localhost:3000/api/health)",
+      "Bash(curl -sS -o /dev/null -w \"%{http_code}\\\\n\" -H \"Authorization: Bearer wrong\" http://localhost:3000/api/me/profile)",
+      "Bash(curl -sS -H \"Authorization: Bearer tok_alice_123\" http://localhost:3000/api/me/profile)",
+      "Bash(curl -sS -X POST -H \"Authorization: Bearer tok_alice_123\" -H \"Content-Type: application/json\" -d '{\"amount\":500000,\"purpose\":\"general\",\"preferredTenureMonths\":36}' http://localhost:3000/api/me/recommend)",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{const f=JSON.parse\\(d\\);console.log\\('TOP:',f.recommendation?.name,'EMI',f.recommendation?.emi,'rate',f.recommendation?.offeredRatePct,'FOIR%',f.recommendation?.foirPct\\);console.log\\('eligible:',f.eligible.map\\(e=>e.id\\).join\\(','\\)\\);console.log\\('ineligible:',f.ineligible.map\\(e=>e.id\\).join\\(','\\)\\);}\\)\")",
+      "Bash(curl -sS -X POST -H \"Authorization: Bearer tok_alice_123\" -H \"Content-Type: application/json\" -d '{\"message\":\"Why do you recommend this product over a personal loan?\",\"profile\":{\"amount\":500000,\"purpose\":\"general\",\"preferredTenureMonths\":36}}' --max-time 60 http://localhost:3000/api/me/chat)",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{const r=JSON.parse\\(d\\);console.log\\('SOURCE:',r.source\\);console.log\\('REPLY:\\\\n'+r.reply\\);}\\)\")",
+      "Bash(curl -sS -X POST -H \"Authorization: Bearer tok_bob_456\" -H \"Content-Type: application/json\" -d '{\"message\":\"Just tell me yes or no — am I 100% guaranteed approval for the maximum amount?\",\"profile\":{\"amount\":300000,\"purpose\":\"business\",\"preferredTenureMonths\":36}}' --max-time 60 http://localhost:3000/api/me/chat)",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{const r=JSON.parse\\(d\\);console.log\\(r.reply.split\\('\\\\n\\\\nDisclaimer'\\)[0]\\);}\\)\")",
+      "Bash(curl -sS -X POST -H \"Authorization: Bearer tok_bob_456\" -H \"Content-Type: application/json\" -d '{\"message\":\"Can I get this loan?\",\"profile\":{\"amount\":9000000,\"monthlyIncome\":12000,\"purpose\":\"general\",\"employmentType\":\"salaried\",\"preferredTenureMonths\":24}}' --max-time 60 http://localhost:3000/api/me/chat)",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{const r=JSON.parse\\(d\\);console.log\\('SOURCE:',r.source,'| TOP:',r.facts.recommendation\\);console.log\\(r.reply.split\\('\\\\n\\\\nDisclaimer'\\)[0].slice\\(0,400\\)\\);}\\)\")",
+      "Bash(pkill -f \"node server.js\")",
+      "Bash(node --test)",
+      "Bash(node --check src/advisor.js)",
+      "Bash(node --check server.js)",
+      "Bash(node -e \"new Function\\(require\\('fs'\\).readFileSync\\('public/app.js','utf8'\\)\\); console.log\\('app.js parses OK'\\)\")",
+      "Bash(node -e \"new Function\\(require\\('fs'\\).readFileSync\\('public/app.js','utf8'\\)\\); console.log\\('OK'\\)\")"
+    ]
+  }
+}
